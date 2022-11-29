@@ -1,7 +1,6 @@
 from smartcard import *
 from smartcard.util import toHexString
 from smartcard.System import readers
-from smartcard.CardConnection import CardConnection
 
 r = readers()
 print(r[0])
@@ -15,27 +14,23 @@ def listToString(list):
     return "".join([chr(x) for x in list])
 
 
-def select():
-    apdu = SELECT + [len(AID)] + AID
+def sendAPDU(apdu):
     print("Sending APDU: %s" % toHexString(apdu).replace(" ", ""))
     data, sw1, sw2 = connection.transmit(apdu)
     print("%x %x" % (sw1, sw2))
     print('data:', data)
+    return data
+
+
+def select():
+    apdu = SELECT + [len(AID)] + AID
+    sendAPDU(apdu)
 
 
 def getDATA(ins):
     apdu = [0x80, 0xCA, 0x00, ins, 0x0C]
-    print("Sending APDU: %s" % toHexString(apdu).replace(" ", ""))
-    data, sw1, sw2 = connection.transmit(apdu)
-    print("status: %x %x" % (sw1, sw2))
-    print('data:', data, listToString(data))
-
-
-def sendCMD(cmd):
-    print("Sending APDU: %s" % toHexString(cmd).replace(" ", ""))
-    data, sw1, sw2 = connection.transmit(cmd)
-    print("status: %x %x" % (sw1, sw2))
-    print('data:', data, listToString(data))
+    data = sendAPDU(apdu)
+    print(listToString(data))
 
 
 select()
