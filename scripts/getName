@@ -1,0 +1,6 @@
+mode_201 
+enable_trace 
+establish_context 
+card_connect 
+card_disconnect 
+release_context
