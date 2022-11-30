@@ -1,3 +1,8 @@
+#!/bin/bash
+set -e
+
+sudo service pcscd start
+
 export JC_HOME_TOOLS=jc211_kit
 export JAVA_HOME=/usr/lib/jvm/zulu-8-amd64/
 export PATH=$JAVA_HOME/bin:$JC_HOME_TOOLS/bin:$PATH
@@ -8,6 +13,7 @@ java -classpath $JC_HOME_TOOLS/bin/converter.jar:. com.sun.javacard.converter.Co
 
 eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 
-gpshell ./scripts/deleteApplet
-gpshell ./scripts/uploadApplet
-gpshell ./scripts/getApplets
+gpshell ./scripts/deleteApplet >/dev/null
+gpshell ./scripts/uploadApplet >/dev/null
+
+echo "Deployement done you can now use python init.py"

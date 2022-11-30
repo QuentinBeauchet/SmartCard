@@ -15,23 +15,44 @@ def listToString(list):
 
 
 def sendAPDU(apdu):
-    print("Sending APDU: %s" % toHexString(apdu).replace(" ", ""))
+    print("\nSending APDU: %s" % toHexString(apdu).replace(" ", ""))
     data, sw1, sw2 = connection.transmit(apdu)
     print("%x %x" % (sw1, sw2))
-    print('data:', data)
     return data
 
 
 def select():
     apdu = SELECT + [len(AID)] + AID
-    sendAPDU(apdu)
-
-
-def getDATA(ins):
-    apdu = [0x80, 0xCA, 0x00, ins, 0x0C]
     data = sendAPDU(apdu)
-    print(listToString(data))
+    print('data:', data)
 
 
+def getDATA(ins, length):
+    apdu = [0x80, ins, 0x00, 0x00, length]
+    data = sendAPDU(apdu)
+    print("data:", [hex(x) for x in data], " -> ", listToString(data))
+    return data
+
+
+def connectPIN(pin):
+    hex_pin = [ord(x) for x in pin]
+    apdu = [0x80, 0xA0, 0x00, 0x00] + [len(hex_pin)] + hex_pin
+    sendAPDU(apdu)
+    data = getDATA(0xA1, 0x01)
+    if (data == [0]):
+        print("Connected using the PIN")
+    else:
+        print("Wrong PIN")
+
+
+print("\n----------- Selecting AID -----------")
 select()
-getDATA(0x40)
+
+print("\n----------- Running INS 00 -----------")
+getDATA(0x00, 0x0C)
+
+print("\n----------- Running INS CA -----------")
+getDATA(0xCA, 0x05)
+
+print("\n----------- Connecting with PIN -----------")
+connectPIN("secret")
