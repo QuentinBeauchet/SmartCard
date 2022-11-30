@@ -8,6 +8,11 @@ import javacard.framework.ISO7816;
 import javacard.framework.ISOException;
 import javacard.framework.APDU;
 import javacard.framework.Util;
+
+import javacard.security.Key;
+import javacard.security.KeyBuilder;
+import javacard.security.RSAPublicKey;
+
 import src.PIN.*;
 
 /**
@@ -58,6 +63,10 @@ public class CustomApplet extends Applet {
 				PIN.changePIN(apdu, buf);
 				break;
 
+			case (byte) 0xB0:
+				Key pubKey = (RSAPublicKey) KeyBuilder.buildKey(KeyBuilder.TYPE_RSA_PUBLIC, KeyBuilder.LENGTH_RSA_512,
+						false);
+				break;
 			default:
 				// good practice: If you don't know the INStruction, say so:
 				ISOException.throwIt(ISO7816.SW_INS_NOT_SUPPORTED);

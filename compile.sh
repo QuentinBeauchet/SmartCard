@@ -16,4 +16,4 @@ eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 gpshell ./scripts/deleteApplet >/dev/null
 gpshell ./scripts/uploadApplet >/dev/null
 
-echo "Deployement done you can now use python init.py"
+echo "Deployement done you can now use python debug.py"
