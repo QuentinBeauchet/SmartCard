@@ -20,7 +20,7 @@ public class Helloworld extends Applet {
 	private final static byte[] PIN = { 0x73, 0x65, 0x63, 0x72, 0x65, 0x74 };
 	private final static byte[] PIN_ANSWER = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 
-	private final static boolean valid_pin = false;
+	private static byte valid_pin = 0x4F;
 
 	public static void install(byte[] buffer, short offset, byte length)
 
@@ -42,6 +42,7 @@ public class Helloworld extends Applet {
 				apdu.setOutgoingAndSend(ISO7816.OFFSET_CDATA, (byte) 12);
 				break;
 			case (byte) 0xCA:
+				checkPINValidity();
 				Util.arrayCopy(salut, (byte) 0, buf, ISO7816.OFFSET_CDATA, (byte) salut.length);
 				apdu.setOutgoingAndSend(ISO7816.OFFSET_CDATA, (byte) salut.length);
 				break;
@@ -59,16 +60,23 @@ public class Helloworld extends Applet {
 				break;
 
 			case (byte) 0xA1:
-				byte[] valid_pin = {
-						Util.arrayCompare(PIN, (byte) 0, PIN_ANSWER, (byte) 0, (short) PIN_ANSWER.length) };
+				valid_pin = Util.arrayCompare(PIN, (byte) 0, PIN_ANSWER, (byte) 0, (short) PIN_ANSWER.length);
 
-				Util.arrayCopy(valid_pin, (byte) 0, buf, ISO7816.OFFSET_CDATA, (byte) 1);
+				byte[] res = { valid_pin };
+
+				Util.arrayCopy(res, (byte) 0, buf, ISO7816.OFFSET_CDATA, (byte) 1);
 				apdu.setOutgoingAndSend(ISO7816.OFFSET_CDATA, (byte) 1);
 				break;
 
 			default:
 				// good practice: If you don't know the INStruction, say so:
 				ISOException.throwIt(ISO7816.SW_INS_NOT_SUPPORTED);
+		}
+	}
+
+	public void checkPINValidity() {
+		if (valid_pin != 0x00) {
+			ISOException.throwIt(ISO7816.SW_SECURITY_STATUS_NOT_SATISFIED);
 		}
 	}
 }

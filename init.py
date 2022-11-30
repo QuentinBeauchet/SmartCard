@@ -56,3 +56,6 @@ getDATA(0xCA, 0x05)
 
 print("\n----------- Connecting with PIN -----------")
 connectPIN("secret")
+
+print("\n----------- Running INS CA -----------")
+getDATA(0xCA, 0x05)
