@@ -90,6 +90,9 @@ getDATA(0xCA, 0x05)
 print("\n%s----------- Changing PIN -----------" % COLORS["yellow"])
 changePIN("salut!")
 
+print("\n%s----------- Running INS CA -----------" % COLORS["blue"])
+getDATA(0xCA, 0x05)
+
 print("\n%s----------- Disconnecting PIN -----------" % COLORS["red"])
 disconnectPIN()
 
