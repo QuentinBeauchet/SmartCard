@@ -13,12 +13,6 @@ import javacard.security.Key;
 import javacard.security.KeyBuilder;
 import javacard.security.RSAPublicKey;
 
-import src.PIN.*;
-
-/**
- * @author Robert
- *
- */
 public class CustomApplet extends Applet {
 	private final static byte[] hello = { 0x68, 0x65, 0x6c, 0x6c, 0x6f, 0x20, 0x72, 0x6f, 0x62, 0x65, 0x72, 0x74 };
 	private final static byte[] salut = { 0x73, 0x61, 0x6c, 0x75, 0x74 };
