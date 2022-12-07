@@ -9,10 +9,6 @@ import javacard.framework.ISOException;
 import javacard.framework.APDU;
 import javacard.framework.Util;
 
-import javacard.security.Key;
-import javacard.security.KeyBuilder;
-import javacard.security.RSAPublicKey;
-
 public class CustomApplet extends Applet {
 	private final static byte[] hello = { 0x68, 0x65, 0x6c, 0x6c, 0x6f, 0x20, 0x72, 0x6f, 0x62, 0x65, 0x72, 0x74 };
 	private final static byte[] salut = { 0x73, 0x61, 0x6c, 0x75, 0x74 };
@@ -58,8 +54,15 @@ public class CustomApplet extends Applet {
 				break;
 
 			case (byte) 0xB0:
-				Key pubKey = (RSAPublicKey) KeyBuilder.buildKey(KeyBuilder.TYPE_RSA_PUBLIC, KeyBuilder.LENGTH_RSA_512,
-						false);
+				RSA.generateKeys(apdu, buf);
+				break;
+
+			case (byte) 0xB1:
+				RSA.signMessage(apdu, buf);
+				break;
+
+			case (byte) 0xB2:
+				RSA.getSignature(apdu, buf);
 				break;
 			default:
 				// good practice: If you don't know the INStruction, say so:
