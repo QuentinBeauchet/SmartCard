@@ -1,15 +1,7 @@
-import hashlib
+import rsa
 from smartcard import *
 from smartcard.util import toHexString
 from smartcard.System import readers
-
-from Crypto.Cipher import PKCS1_OAEP
-from Crypto.Signature import PKCS1_v1_5
-from Crypto.PublicKey import RSA
-from Crypto.Hash import SHA256
-
-import time
-time.clock = time.time
 
 r = readers()
 print(r[0])
@@ -73,44 +65,34 @@ def changePIN(pin):
 
 
 def getPublicKey():
-    data = sendAPDU([0x80, 0xB0, 0x00, 0x00, 0x40])
-    if (len(data) == 0):
-        print("Something went wrong with the keys")
-    else:
+    data = getDATA(0xB0, 0x00)
 
-        len_1 = int.from_bytes(data[:2], "big")
-        exp = int.from_bytes(data[2:2 + len_1], "big")
-        len_2 = int.from_bytes(data[2 + len_1:2 + len_1 + 2], "big")
-        mod = int.from_bytes(
-            data[2 + len_1 + 2:2 + len_1 + 2 + len_2], "big")
+    data = getDATA(0xB1, 0x47)
 
-        key = RSA.construct((mod, exp))
-        return key
+    len_exp = int.from_bytes(data[:2], "big")
+    offset = 2
+    exp = int.from_bytes(data[offset:offset + len_exp], "big")
+    offset += len_exp
+    len_mod = int.from_bytes(data[offset:offset + 2], "big")
+    offset += 2
+    mod = int.from_bytes(data[offset:offset + len_mod], "big")
+
+    return rsa.PublicKey(mod, exp)
 
 
-def verifySignature(message):
-    key = getPublicKey()
+def signMessage(message):
+    hex_msg = [ord(x) for x in message]
+    sendAPDU([0x80, 0xB2, 0x00, 0x00] + [len(hex_msg)] + hex_msg)
+    return getDATA(0xB3, 0x40)
 
-    message_hash = SHA256.new()
-    message_hash.update(bytes(message, 'utf-8'))
 
-    hex_hash = [int(hex(x), 16) for x in message_hash.digest()]
-
-    apdu = [0x80, 0xB1, 0x00, 0x00] + [len(hex_hash)] + hex_hash
-
-    (data, _, data_len) = sendAPDU(apdu, True)
-
-    print(data)
-
-    signature = getDATA(0xB2, 0x1c)
-    print(signature)
-
-    signer = PKCS1_v1_5.new(key.public_key())
-
-    if signer.verify(message_hash, signature):
-        print('Signature is valid')
-    else:
-        print('Signature is invalid')
+def verifyMessage(message, signature, publicKey):
+    try:
+        rsa.verify(bytes(message, "utf-8").ljust(127,
+                   b'\x00'), signature, publicKey)
+        print("Signature is valid.")
+    except:
+        print("Signature is invalid.")
 
 
 print("\n%s----------- Selecting AID -----------" % COLORS["white"])
@@ -153,7 +135,13 @@ print("\n%s----------- Connecting with PIN -----------" % COLORS["green"])
 connectPIN("salut!")
 
 print("\n%s----------- Fetching RSA PubKey -----------" % COLORS["purple"])
-# getPublicKey()
+publicKey = getPublicKey()
+
+print("\n%s----------- Sign Message -----------" % COLORS["purple"])
+signature = signMessage("salut")
 
 print("\n%s----------- Verify signature -----------" % COLORS["purple"])
-verifySignature("message")
+verifyMessage("salut", signature, publicKey)
+
+print("\n%s----------- Verify signature -----------" % COLORS["purple"])
+verifyMessage("marchera pas", signature, publicKey)

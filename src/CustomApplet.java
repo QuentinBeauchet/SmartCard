@@ -54,16 +54,21 @@ public class CustomApplet extends Applet {
 				break;
 
 			case (byte) 0xB0:
-				RSA.generateKeys(apdu, buf);
+				RSA.generateKeyPair();
 				break;
 
 			case (byte) 0xB1:
-				RSA.signMessage(apdu, buf);
+				RSA.sendPublicKey(apdu, buf);
 				break;
 
 			case (byte) 0xB2:
-				RSA.getSignature(apdu, buf);
+				RSA.signMessage(apdu, buf);
 				break;
+
+			case (byte) 0xB3:
+				RSA.sendSignature(apdu, buf);
+				break;
+
 			default:
 				// good practice: If you don't know the INStruction, say so:
 				ISOException.throwIt(ISO7816.SW_INS_NOT_SUPPORTED);

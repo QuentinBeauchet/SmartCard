@@ -3,57 +3,63 @@ package src;
 import javacard.framework.APDU;
 import javacard.framework.Util;
 import javacard.framework.ISO7816;
-import javacard.framework.ISOException;
 
 import javacard.security.KeyPair;
 import javacard.security.KeyBuilder;
-import javacard.security.RSAPrivateKey;
 import javacard.security.RSAPublicKey;
 import javacard.security.Signature;
 
-import javacardx.crypto.Cipher;
-
 public class RSA {
+    private static KeyPair keyPair;
+    private static byte[] signature = new byte[64];
 
-    private static Cipher cipher;
-    private static RSAPublicKey publicKey;
-    private static RSAPrivateKey privateKey;
-    private static Signature signer;
-
-    private static byte[] signature = new byte[512];
-    private static short signature_len = 0;
-
-    public static void generateKeys(APDU apdu, byte[] buf) {
-        // Generate a new RSA key pair using KeyBuilder
-        KeyPair keyPair = new KeyPair(KeyPair.ALG_RSA, KeyBuilder.LENGTH_RSA_512);
+    public static void generateNewKeyPair() {
+        keyPair = new KeyPair(KeyPair.ALG_RSA, KeyBuilder.LENGTH_RSA_512);
         keyPair.genKeyPair();
+    }
 
-        byte[] buffer = apdu.getBuffer();
+    public static void generateKeyPair() {
+        if (keyPair == null) {
+            generateNewKeyPair();
+        }
+    }
+
+    public static void sendPublicKey(APDU apdu, byte[] buf) {
+        RSAPublicKey publicKey = (RSAPublicKey) keyPair.getPublic();
+
         short offset = ISO7816.OFFSET_CDATA;
 
-        publicKey = (RSAPublicKey) keyPair.getPublic();
-        privateKey = (RSAPrivateKey) keyPair.getPrivate();
+        short expLen = publicKey.getExponent(buf, (short) (offset + 2));
+        offset = Util.setShort(buf, offset, expLen);
+        offset += expLen;
 
-        signer = Signature.getInstance(Signature.ALG_RSA_SHA_PKCS1, false);
+        short modLen = publicKey.getModulus(buf, (short) (offset + 2));
+        offset = Util.setShort(buf, (short) offset, modLen);
+        offset += modLen;
 
-        signer.init(privateKey, Signature.MODE_SIGN);
-
-        short expLen = publicKey.getExponent(buffer, (short) (offset + 2));
-        Util.setShort(buffer, offset, expLen);
-        short modLen = publicKey.getModulus(buffer, (short) (offset + 4 + expLen));
-        Util.setShort(buffer, (short) (offset + 2 + expLen), modLen);
-        apdu.setOutgoingAndSend(offset, (short) (4 + expLen + modLen));
+        apdu.setOutgoingAndSend(ISO7816.OFFSET_CDATA, (short) (offset - ISO7816.OFFSET_CDATA));
     }
 
     public static void signMessage(APDU apdu, byte[] buf) {
-
         short bytesRead = apdu.setIncomingAndReceive();
-        signature_len = signer.sign(buf, ISO7816.OFFSET_CDATA, bytesRead, signature, (short) 0);
-        apdu.setOutgoingAndSend(ISO7816.OFFSET_CDATA, (byte) signature_len);
+        short answerOffset = (short) 0;
+        byte[] message = new byte[127];
+
+        while (bytesRead > 0) {
+            Util.arrayCopy(buf, ISO7816.OFFSET_CDATA, message, answerOffset, bytesRead);
+            answerOffset += bytesRead;
+            bytesRead = apdu.receiveBytes(ISO7816.OFFSET_CDATA);
+        }
+
+        Signature privSign = Signature.getInstance(Signature.ALG_RSA_SHA_PKCS1, false);
+        privSign.init(keyPair.getPrivate(), Signature.MODE_SIGN);
+        short len = privSign.sign(message, (short) 0, (short) message.length, signature, (short) 0);
+
+        apdu.setOutgoingAndSend(ISO7816.OFFSET_CDATA, (byte) len);
     }
 
-    public static void getSignature(APDU apdu, byte[] buf) {
-        Util.arrayCopy(signature, (byte) 0, buf, ISO7816.OFFSET_CDATA, (byte) signature_len);
-        apdu.setOutgoingAndSend(ISO7816.OFFSET_CDATA, (byte) signature_len);
+    public static void sendSignature(APDU apdu, byte[] buf) {
+        Util.arrayCopy(signature, (byte) 0, buf, ISO7816.OFFSET_CDATA, (byte) signature.length);
+        apdu.setOutgoingAndSend(ISO7816.OFFSET_CDATA, (byte) signature.length);
     }
 }

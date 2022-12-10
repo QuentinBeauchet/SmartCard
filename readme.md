@@ -29,3 +29,8 @@ java -classpath $JC_HOME_TOOLS/bin/converter.jar:. com.sun.javacard.converter.Co
 ```sh
 sudo service pcscd start
 ```
+
+# Documentation
+
+- [List of responses code](https://www.eftlab.com/knowledge-base/complete-list-of-apdu-responses)
+- [APDU message protocol format](https://en.wikipedia.org/wiki/Smart_card_application_protocol_data_unit)
