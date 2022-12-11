@@ -17,6 +17,8 @@ Instruction | Usage
 
 >To test everything you can uncomment the last two lines from APDU.py and run it with ```python APDU.py```
 
+### :warning: The default PIN is ```secret``` :warning:
+
 # Requirements
 
 - You need to clone the repo [pyscard](https://github.com/LudovicRousseau/pyscard) and run the setup.py script.
