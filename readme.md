@@ -1,3 +1,6 @@
+# Description
+JavaCard Applet capable of making connection using a PIN and generating 512bit RSA keys to sign a message and verify it. We also made a CLI to communicate with the JavaCard.
+
 # Architecture
 Instruction | Usage
 --- | --- |
@@ -5,7 +8,7 @@ Instruction | Usage
 ```0xA0``` | Read the PIN from the command data and compare it with the PIN stored in memory, returns ```69 82``` if the PIN does not match. Also to make your life easier we limited the PIN to a length of 6 bytes.
 ```0xA1``` | Disconnected the PIN meaning that the next time the user want to send a command to the JavaCard he will need to reconnect.
 ```0xA2``` | Allow the user to change the PIN stored in memory. It reads the new PIN from the command data, disconnect the PIN and returns ```69 83``` if the PIN was successfully changed.
-```0xB0``` | Generate a 512 RSA Keys pair and store it in memory.
+```0xB0``` | Generate a 512bit RSA Keys pair and store it in memory.
 ```0xB1``` | Returns the exponent and the modulus of the public key as ```len(exp) exp len(mod) mod``` (without spaces).
 ```0xB2``` | Read a message from the command data and signs it using the private key. The signature it stored in memory.
 ```0xB3``` | Returns the signature.
@@ -64,7 +67,7 @@ python cli.py
 ```
 Commands :
 
-```sh
+```
 $ help
 Command List :
 - login ... -> connect with a PIN to the card
@@ -76,38 +79,38 @@ Command List :
 - verify ...  -> check if the message in argument is matching
 - info  -> get card infos
 ```
-```sh
+```
 $ login secret
 Successfully connected using PIN
 ```
-```sh
+```
 $ logout secret
 Successfully disconnected the PIN
 ```
-```sh
+```
 $ changepin secret
 Successfully changed the PIN and disconnected
 ```
-```sh
+```
 $ genkeys
 Successfully generated a new RSA KeyPair
 ```
-```sh
+```
 $ pubkey
 -----BEGIN RSA PUBLIC KEY-----
 MEgCQQClmsxmuMET0kBl5nMIoLuXoQPmwNxtLjOybeXH4XYXFo5d8DoBnFqKE30u
 Fa0qN87UBsxLjGYsbjSOgmvjabQpAgMBAAE=
 -----END RSA PUBLIC KEY-----
 ```
-```sh
+```
 $ sign hello 
 Received signature: ¤³@Ë]&§+ÄàºSð¨ªÂPþV"AgY[.»gCT'ÑK³`üzýå¼eàóâÑù­ÿ±»ou:V
 ```
-```sh
+```
 $ verify hello
 Signature is valid
 ```
-```sh
+```
 $ info
 Created by Quentin BEAUCHET and Yann FORNER
 ```
