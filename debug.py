@@ -44,9 +44,10 @@ def connectPIN(pin):
     sendAPDU(apdu)
     data = getDATA(0xA1, 0x01)
     if (data == [0]):
-        print("Connected using the PIN")
+        print("Connected using the PIN") 
     else:
         print("Wrong PIN")
+    return data == [0]
 
 
 def disconnectPIN():
@@ -55,13 +56,14 @@ def disconnectPIN():
         print("Something went wrong: still connected with PIN")
     else:
         print("PIN disconnected")
+    return data == [0]
 
 
 def changePIN(pin):
     hex_pin = [ord(x) for x in pin]
     apdu = [0x80, 0xA3, 0x00, 0x00] + [len(hex_pin)] + hex_pin
     sendAPDU(apdu)
-    connectPIN(pin)
+    return connectPIN(pin)
 
 
 def getPublicKey():
@@ -97,9 +99,10 @@ def verifyMessage(message, signature, publicKey):
 
 print("\n%s----------- Selecting AID -----------" % COLORS["white"])
 select()
-
+"""
 print("\n%s------------ Disconnecting PIN -----------" % COLORS["red"])
 disconnectPIN()
+
 
 print("\n%s------------ Running INS 00 -----------" % COLORS["blue"])
 getDATA(0x00, 0x0C)
@@ -138,10 +141,12 @@ print("\n%s----------- Fetching RSA PubKey -----------" % COLORS["purple"])
 publicKey = getPublicKey()
 
 print("\n%s----------- Sign Message -----------" % COLORS["purple"])
-signature = signMessage("salut")
+signature = ("salut")
 
 print("\n%s----------- Verify signature -----------" % COLORS["purple"])
 verifyMessage("salut", signature, publicKey)
 
 print("\n%s----------- Verify signature -----------" % COLORS["purple"])
 verifyMessage("marchera pas", signature, publicKey)
+
+"""
