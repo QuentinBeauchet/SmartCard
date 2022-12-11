@@ -13,15 +13,9 @@ public class RSA {
     private static KeyPair keyPair;
     private static byte[] signature = new byte[64];
 
-    public static void generateNewKeyPair() {
+    public static void generateKeyPair() {
         keyPair = new KeyPair(KeyPair.ALG_RSA, KeyBuilder.LENGTH_RSA_512);
         keyPair.genKeyPair();
-    }
-
-    public static void generateKeyPair() {
-        if (keyPair == null) {
-            generateNewKeyPair();
-        }
     }
 
     public static void sendPublicKey(APDU apdu, byte[] buf) {

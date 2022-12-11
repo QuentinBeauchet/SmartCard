@@ -10,8 +10,10 @@ import javacard.framework.APDU;
 import javacard.framework.Util;
 
 public class CustomApplet extends Applet {
-	private final static byte[] hello = { 0x68, 0x65, 0x6c, 0x6c, 0x6f, 0x20, 0x72, 0x6f, 0x62, 0x65, 0x72, 0x74 };
-	private final static byte[] salut = { 0x73, 0x61, 0x6c, 0x75, 0x74 };
+	private final static byte[] informations = { 67, 114, 101, 97, 116, 101, 100, 32, 98, 121, 32, 81, 117, 101, 110,
+			116, 105,
+			110, 32, 66, 69, 65, 85, 67, 72, 69, 84, 32, 97, 110, 100, 32, 89, 97, 110, 110, 32, 70, 79, 82, 78, 69,
+			82 };
 
 	public static void install(byte[] buffer, short offset, byte length)
 
@@ -29,43 +31,41 @@ public class CustomApplet extends Applet {
 		byte[] buf = apdu.getBuffer();
 		switch (buf[ISO7816.OFFSET_INS]) {
 			case (byte) 0x00:
-				Util.arrayCopy(hello, (byte) 0, buf, ISO7816.OFFSET_CDATA, (byte) 12);
-				apdu.setOutgoingAndSend(ISO7816.OFFSET_CDATA, (byte) 12);
-				break;
-
-			case (byte) 0xCA:
-				sendMessage(apdu, buf, salut);
+				PIN.isConnectedWithPIN();
+				Util.arrayCopy(informations, (byte) 0, buf, ISO7816.OFFSET_CDATA, (byte) informations.length);
+				apdu.setOutgoingAndSend(ISO7816.OFFSET_CDATA, (byte) informations.length);
 				break;
 
 			case (byte) 0xA0:
-				PIN.insertPIN(apdu, buf);
-				break;
-
-			case (byte) 0xA1:
 				PIN.connectPIN(apdu, buf);
 				break;
 
-			case (byte) 0xA2:
-				PIN.disconnectPIN(apdu, buf);
+			case (byte) 0xA1:
+				PIN.disconnectPIN();
 				break;
 
-			case (byte) 0xA3:
+			case (byte) 0xA2:
+				PIN.isConnectedWithPIN();
 				PIN.changePIN(apdu, buf);
 				break;
 
 			case (byte) 0xB0:
+				PIN.isConnectedWithPIN();
 				RSA.generateKeyPair();
 				break;
 
 			case (byte) 0xB1:
+				PIN.isConnectedWithPIN();
 				RSA.sendPublicKey(apdu, buf);
 				break;
 
 			case (byte) 0xB2:
+				PIN.isConnectedWithPIN();
 				RSA.signMessage(apdu, buf);
 				break;
 
 			case (byte) 0xB3:
+				PIN.isConnectedWithPIN();
 				RSA.sendSignature(apdu, buf);
 				break;
 
@@ -73,11 +73,5 @@ public class CustomApplet extends Applet {
 				// good practice: If you don't know the INStruction, say so:
 				ISOException.throwIt(ISO7816.SW_INS_NOT_SUPPORTED);
 		}
-	}
-
-	private void sendMessage(APDU apdu, byte[] buf, byte[] msg) {
-		PIN.isConnectedWithPIN();
-		Util.arrayCopy(msg, (byte) 0, buf, ISO7816.OFFSET_CDATA, (byte) msg.length);
-		apdu.setOutgoingAndSend(ISO7816.OFFSET_CDATA, (byte) msg.length);
 	}
 }

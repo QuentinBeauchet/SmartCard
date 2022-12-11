@@ -8,15 +8,14 @@ import javacard.framework.Util;
 public class PIN {
     private final static byte[] PIN = { 0x73, 0x65, 0x63, 0x72, 0x65, 0x74 };
     private final static byte[] PIN_ANSWER = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
-    private static byte valid_pin = 0x4F;
 
     public static void isConnectedWithPIN() {
-        if (valid_pin != 0x00) {
+        if (Util.arrayCompare(PIN, (byte) 0, PIN_ANSWER, (byte) 0, (short) PIN_ANSWER.length) != 0x00) {
             ISOException.throwIt(ISO7816.SW_SECURITY_STATUS_NOT_SATISFIED);
         }
     }
 
-    public static void insertPIN(APDU apdu, byte[] buf) {
+    public static void connectPIN(APDU apdu, byte[] buf) {
         short bytesRead = apdu.setIncomingAndReceive();
         short answerOffset = (short) 0;
 
@@ -26,24 +25,12 @@ public class PIN {
             bytesRead = apdu.receiveBytes(ISO7816.OFFSET_CDATA);
         }
 
-        apdu.setOutgoingAndSend(ISO7816.OFFSET_CDATA, (byte) PIN_ANSWER.length);
+        isConnectedWithPIN();
     }
 
-    public static void connectPIN(APDU apdu, byte[] buf) {
-        valid_pin = Util.arrayCompare(PIN, (byte) 0, PIN_ANSWER, (byte) 0, (short) PIN_ANSWER.length);
-
-        byte[] res = { valid_pin };
-
-        Util.arrayCopy(res, (byte) 0, buf, ISO7816.OFFSET_CDATA, (byte) 1);
-        apdu.setOutgoingAndSend(ISO7816.OFFSET_CDATA, (byte) 1);
-    }
-
-    public static void disconnectPIN(APDU apdu, byte[] buf) {
-        for (short i = 0; i < PIN_ANSWER.length; i++) {
-            PIN_ANSWER[i] = 0x00;
-        }
-
-        connectPIN(apdu, buf);
+    public static void disconnectPIN() {
+        resetPIN();
+        isConnectedWithPIN();
     }
 
     public static void changePIN(APDU apdu, byte[] buf) {
@@ -56,8 +43,13 @@ public class PIN {
             bytesRead = apdu.receiveBytes(ISO7816.OFFSET_CDATA);
         }
 
-        apdu.setOutgoingAndSend(ISO7816.OFFSET_CDATA, (byte) PIN.length);
+        resetPIN();
+        ISOException.throwIt((short) 0x6983);
+    }
 
-        disconnectPIN(apdu, buf);
+    public static void resetPIN() {
+        for (short i = 0; i < PIN_ANSWER.length; i++) {
+            PIN_ANSWER[i] = 0x00;
+        }
     }
 }
