@@ -30,6 +30,55 @@ java -classpath $JC_HOME_TOOLS/bin/converter.jar:. com.sun.javacard.converter.Co
 sudo service pcscd start
 ```
 
+# CLI
+
+```sh
+$ help
+Command List :
+- login ... -> connect with a PIN to the card
+- logout  -> disconnect the card
+- changepin ...  -> change the PIN
+- genkeys  -> generate a RSA key pair
+- pubkey  -> get the public key from the card
+- sign ...  -> get the signature of a message
+- verify ...  -> check if the message in argument is matching
+- info  -> get card infos
+```
+
+Examples :
+```sh
+$ login secret
+Successfully connected using PIN
+```
+```sh
+$ changepin secret
+Successfully changed the PIN and disconnected
+```
+```sh
+$ genkeys
+Successfully generated a new RSA KeyPair
+```
+```sh
+$ pubkey
+-----BEGIN RSA PUBLIC KEY-----
+MEgCQQClmsxmuMET0kBl5nMIoLuXoQPmwNxtLjOybeXH4XYXFo5d8DoBnFqKE30u
+Fa0qN87UBsxLjGYsbjSOgmvjabQpAgMBAAE=
+-----END RSA PUBLIC KEY-----
+```
+```sh
+$ sign hello 
+Received signature: ¤³@Ë]&§+ÄàºSð¨ªÂPþV"AgY[.»gCT'ÑK³`üzýå¼eàóâÑù­ÿ±»ou:V
+```
+```sh
+$ verify hello
+Signature is valid
+```
+```sh
+$ info
+Created by Quentin BEAUCHET and Yann FORNER
+```
+
+
 # Documentation
 
 - [List of responses code](https://www.eftlab.com/knowledge-base/complete-list-of-apdu-responses)
